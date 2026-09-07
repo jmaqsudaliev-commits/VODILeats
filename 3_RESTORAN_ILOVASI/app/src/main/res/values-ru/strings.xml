@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Водил Итс Ресторан</string>
+    <string name="restaurant_title">Панель Ресторана</string>
+    <string name="tab_orders">Заказы</string>
+    <string name="tab_menu">Меню / Стоп-лист</string>
+    <string name="new_orders">Новые заказы</string>
+    <string name="preparing_orders">Готовятся</string>
+    <string name="ready_orders">Готовы к выдаче</string>
+    <string name="btn_confirm">Подтвердить заказ</string>
+    <string name="btn_start_preparing">Начать готовку</string>
+    <string name="btn_ready">Готов (Ожидает курьера)</string>
+    <string name="stop_list_active">В стоп-листе (Недоступно)</string>
+    <string name="stop_list_available">Доступно к заказу</string>
+    <string name="dish_price">%s сум</string>
+</resources>

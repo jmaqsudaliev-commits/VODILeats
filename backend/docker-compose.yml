@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: vodil_eats_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vodil_eats
+      POSTGRES_USER: vodil_admin
+      POSTGRES_PASSWORD: vodil_secret_2024
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U vodil_admin -d vodil_eats']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vodil_eats_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vodil_eats_api
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      NODE_ENV: production
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: vodil_eats
+      DATABASE_USER: vodil_admin
+      DATABASE_PASSWORD: vodil_secret_2024
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: vodil-eats-jwt-super-secret-key-2024
+      JWT_REFRESH_SECRET: vodil-eats-refresh-super-secret-key-2024
+      JWT_EXPIRATION: 15m
+      JWT_REFRESH_EXPIRATION: 7d
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:

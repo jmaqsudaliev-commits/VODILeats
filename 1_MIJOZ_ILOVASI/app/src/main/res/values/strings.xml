@@ -1,0 +1,63 @@
+<resources>
+    <string name="app_name">Vodil Eats</string>
+    <string name="customer_title">Vodil Eats Mijoz</string>
+
+    <!-- Auth -->
+    <string name="auth_title">Vodil Eats ga xush kelibsiz!</string>
+    <string name="auth_subtitle">Sevimli taomlaringizni tez va issiq yetkazib beramiz</string>
+    <string name="tab_login">Kirish (Parol bilan)</string>
+    <string name="tab_register">Ro\'yxatdan o\'tish (SMS)</string>
+    <string name="phone_label">Telefon raqamingiz</string>
+    <string name="phone_placeholder">+998 90 123 45 67</string>
+    <string name="password_label">Parol</string>
+    <string name="password_placeholder">Parolingizni kiriting</string>
+    <string name="full_name_label">Ism va Familiyangiz</string>
+    <string name="full_name_placeholder">Masalan: Alisher Navoiy</string>
+    <string name="otp_label">SMS Tasdiqlash Kodi</string>
+    <string name="otp_placeholder">6 xonali SMS kod</string>
+    <string name="btn_login">Tizimga Kirish</string>
+    <string name="btn_send_otp">SMS Kodni Olish</string>
+    <string name="btn_verify_register">Ro\'yxatdan O\'tishni Yakunlash</string>
+    <string name="forgot_password">Parolni unutdingizmi?</string>
+
+    <!-- Catalog -->
+    <string name="catalog_title">Taomlar Katalogi</string>
+    <string name="search_placeholder">Restoran yoki taom qidirish...</string>
+    <string name="all_categories">Barchasi</string>
+    <string name="popular_restaurants">Ommabop Restoranlar</string>
+    <string name="delivery_time">%d daqiqa</string>
+    <string name="delivery_fee">Yetkazish: %s so\'m</string>
+    <string name="open_status">Ochiq</string>
+    <string name="closed_status">Yopiq</string>
+
+    <!-- Menu & Cart -->
+    <string name="menu_title">Menyu</string>
+    <string name="add_to_cart">Savatchaga qo\'shish</string>
+    <string name="cart_title">Savatcha</string>
+    <string name="cart_empty">Savatchangiz bo\'sh</string>
+    <string name="cart_empty_subtext">Sevimli taomlaringizni katalogdan tanlang</string>
+    <string name="order_summary">Buyurtma Xulosasi</string>
+    <string name="subtotal">Taomlar summasi:</string>
+    <string name="delivery_cost">Yetkazib berish:</string>
+    <string name="total_amount">Jami to\'lov:</string>
+    <string name="delivery_address_label">Yetkazish manzili</string>
+    <string name="delivery_address_placeholder">Vodil, Mustaqillik ko\'chasi, 14-uy</string>
+    <string name="customer_note_label">Kuryer uchun izoh (ixtiyoriy)</string>
+    <string name="btn_checkout">Buyurtma Berish</string>
+
+    <!-- Tracking -->
+    <string name="tracking_title">Jonli Treking</string>
+    <string name="order_status">Buyurtma holati</string>
+    <string name="status_pending">Qabul qilindi</string>
+    <string name="status_confirmed">Tasdiqlandi</string>
+    <string name="status_preparing">Tayyorlanmoqda</string>
+    <string name="status_delivering">Kuryer yo\'lda</string>
+    <string name="status_delivered">Yetkazildi</string>
+    <string name="status_cancelled">Bekor qilindi</string>
+    <string name="call_courier">Kuryerga qo\'ng\'iroq</string>
+    <string name="call_restaurant">Restoranga qo\'ng\'iroq</string>
+
+    <!-- Language -->
+    <string name="language_uzbek">O\'zbekcha</string>
+    <string name="language_russian">Русский</string>
+</resources>

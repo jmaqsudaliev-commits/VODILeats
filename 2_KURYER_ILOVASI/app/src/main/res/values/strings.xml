@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Vodil Eats Kuryer</string>
+    <string name="courier_title">Kuryer Boshqaruvi</string>
+    <string name="online_status">Onlayn (Buyurtma qabul qilinmoqda)</string>
+    <string name="offline_status">Oflayn (Tanaffusda)</string>
+    <string name="active_order">Faol Buyurtma</string>
+    <string name="step_to_restaurant">1. Restoranga borish</string>
+    <string name="step_pickup">2. Buyurtmani qabul qilish</string>
+    <string name="step_to_customer">3. Mijozga yetkazish</string>
+    <string name="step_completed">Yetkazildi ✅</string>
+    <string name="today_earnings">Bugungi daromad:</string>
+    <string name="today_deliveries">Yetkazilgan buyurtmalar:</string>
+    <string name="call_customer">Mijozga qo\'ng\'iroq</string>
+    <string name="open_navigator">Xaritada ochish</string>
+    <string name="new_order_offer">Yangi Buyurtma Taklifi!</string>
+    <string name="accept_order">Qabul Qilish</string>
+    <string name="reject_order">Rad Etish</string>
+</resources>

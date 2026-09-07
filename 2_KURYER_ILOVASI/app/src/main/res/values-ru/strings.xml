@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Водил Итс Курьер</string>
+    <string name="courier_title">Панель Курьера</string>
+    <string name="online_status">Онлайн (Прием заказов)</string>
+    <string name="offline_status">Офлайн (На перерыве)</string>
+    <string name="active_order">Активный заказ</string>
+    <string name="step_to_restaurant">1. Ехать в ресторан</string>
+    <string name="step_pickup">2. Забрать заказ в ресторане</string>
+    <string name="step_to_customer">3. Доставить клиенту</string>
+    <string name="step_completed">Доставлен ✅</string>
+    <string name="today_earnings">Заработок за сегодня:</string>
+    <string name="today_deliveries">Доставлено заказов:</string>
+    <string name="call_customer">Позвонить клиенту</string>
+    <string name="open_navigator">Открыть в навигаторе</string>
+    <string name="new_order_offer">Новое предложение заказа!</string>
+    <string name="accept_order">Принять заказ</string>
+    <string name="reject_order">Отклонить</string>
+</resources>

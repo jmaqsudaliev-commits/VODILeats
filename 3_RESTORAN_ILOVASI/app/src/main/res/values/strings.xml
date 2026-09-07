@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Vodil Eats Restoran</string>
+    <string name="restaurant_title">Restoran Paneli</string>
+    <string name="tab_orders">Buyurtmalar</string>
+    <string name="tab_menu">Menyu / Stop-list</string>
+    <string name="new_orders">Yangi Buyurtmalar</string>
+    <string name="preparing_orders">Tayyorlanmoqda</string>
+    <string name="ready_orders">Kuryerga Tayyor</string>
+    <string name="btn_confirm">Tasdiqlash</string>
+    <string name="btn_start_preparing">Tayyorlashni Boshlash</string>
+    <string name="btn_ready">Tayyor (Kuryer kutilmoqda)</string>
+    <string name="stop_list_active">Stop-listda (Sotuvda yo\'q)</string>
+    <string name="stop_list_available">Mavjud (Sotuvda ochiq)</string>
+    <string name="dish_price">%s so\'m</string>
+</resources>

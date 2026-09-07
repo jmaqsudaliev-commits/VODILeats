@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VODIL EATS — Super Admin Boshqaruv Paneli</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- Master Security Lock Screen -->
+  <div class="lock-screen-overlay" id="lockScreenOverlay">
+    <div class="lock-card" id="lockCard">
+      <div class="lock-icon-badge">
+        <i class="fas fa-shield-halved"></i>
+      </div>
+      <div class="lock-title">VODIL EATS — EGASI PANELI</div>
+      <div class="lock-subtitle">
+        Boshqaruv paneliga kirish uchun 20 xonali shaxsiy xavfsizlik parolingizni kiriting:
+      </div>
+
+      <form onsubmit="handleAdminLogin(event)" autocomplete="off">
+        <div class="password-input-group">
+          <input 
+            type="password" 
+            id="adminPasswordInput" 
+            class="password-input" 
+            placeholder="20 xonali maxfiy parol..." 
+            maxlength="30"
+            required
+            oninput="updatePasswordCounter(this.value)"
+          >
+          <button type="button" class="password-toggle-btn" onclick="togglePasswordVisibility()">
+            <i class="fas fa-eye" id="passwordEyeIcon"></i>
+          </button>
+          <div class="password-counter">
+            <span id="charCount">Belgilar: 0 / 20</span>
+            <span id="lockErrorMsg" style="color:var(--danger); font-weight:600; display:none;">Noto'g'ri parol!</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:13px; font-size:14px;">
+          <i class="fas fa-unlock"></i>
+          <span>Tizimga Kirish</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand-section">
+      <div class="brand-icon">
+        <i class="fas fa-utensils"></i>
+      </div>
+      <div>
+        <div class="brand-title">VODIL EATS</div>
+        <div class="brand-subtitle">SUPER ADMIN</div>
+      </div>
+    </div>
+
+    <ul class="nav-links">
+      <li class="nav-item">
+        <a class="nav-link active" data-tab="dashboard">
+          <i class="fas fa-chart-pie"></i>
+          <span>Boshqaruv Paneli</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-tab="orders">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Jonli Buyurtmalar</span>
+          <span class="nav-badge pulse" id="navActiveOrdersBadge" style="display:none;">0</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-tab="restaurants">
+          <i class="fas fa-store"></i>
+          <span>Restoranlar</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-tab="couriers">
+          <i class="fas fa-motorcycle"></i>
+          <span>Kuryerlar & Xarita</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-tab="customers">
+          <i class="fas fa-users"></i>
+          <span>Mijozlar</span>
+        </a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="server-status-indicator" id="serverStatusDot"></div>
+      <div>
+        <div class="server-status-text" id="serverStatusText">Server: Tekshirilmoqda...</div>
+        <div style="font-size:10px; color:var(--text-muted);">Vodil Eats Core v1.0</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Wrapper -->
+  <main class="main-wrapper">
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="page-title-box">
+        <h1>Boshqaruv Paneli</h1>
+        <p>Vodil Eats platformasi bo'yicha jonli tahlillar va statistika</p>
+      </div>
+
+      <div class="header-actions">
+        <div class="clock-pill" id="liveClock">🕒 00:00:00</div>
+
+        <!-- Language Switcher -->
+        <button class="btn btn-secondary btn-sm" id="langSwitchBtn" onclick="toggleLanguage()" title="Tilni almashtirish / Сменить язык">
+          <i class="fas fa-globe"></i>
+          <span id="langSwitchText">🇺🇿 O'zbekcha</span>
+        </button>
+
+        <div class="clock-pill" style="border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.1); color: #818cf8;">
+          <i class="fas fa-crown"></i>
+          <span data-i18n="badgeOwner">Platforma Egasi</span>
+        </div>
+        
+        <button class="btn btn-primary btn-sm" onclick="openAddRestaurantModal()">
+          <i class="fas fa-plus-circle"></i>
+          <span data-i18n="btnNewRestaurant">Yangi Restoran</span>
+        </button>
+
+        <button class="btn btn-secondary btn-sm" onclick="exportOrdersCSV()" title="CSV Hisobot yuklab olish">
+          <i class="fas fa-file-excel" style="color:#10b981;"></i>
+          <span data-i18n="btnExportCsv">CSV Hisobot</span>
+        </button>
+
+        <button class="btn btn-secondary btn-sm" onclick="refreshAllData(false)">
+          <i class="fas fa-sync-alt" id="refreshIcon"></i>
+        </button>
+
+        <button class="btn btn-secondary btn-sm" onclick="handleAdminLogout()" title="Chiqish va qulflash">
+          <i class="fas fa-lock"></i>
+          <span data-i18n="btnLock">Qulflash</span>
+        </button>
+
+        <a href="http://localhost:3000/api/docs" target="_blank" class="btn btn-secondary btn-sm">
+          <i class="fas fa-book"></i>
+          <span>Swagger API</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <div class="content-body">
+
+      <!-- ================= TAB 1: DASHBOARD ================= -->
+      <div class="tab-view" id="view-dashboard">
+        <!-- 6 KPI Metric Cards -->
+        <div class="metrics-grid">
+          <div class="metric-card success">
+            <div class="metric-header">
+              <span class="metric-title">Jami Tushum</span>
+              <div class="metric-icon-box" style="color:var(--success);"><i class="fas fa-wallet"></i></div>
+            </div>
+            <div class="metric-value" id="statRevenue">0 so'm</div>
+            <div class="metric-subtext"><span class="trend-up">↑ 100%</span> Muvaffaqiyatli buyurtmalardan</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Jami Buyurtmalar</span>
+              <div class="metric-icon-box" style="color:var(--primary);"><i class="fas fa-clipboard-list"></i></div>
+            </div>
+            <div class="metric-value" id="statTotalOrders">0</div>
+            <div class="metric-subtext">Barcha qabul qilingan</div>
+          </div>
+
+          <div class="metric-card warning">
+            <div class="metric-header">
+              <span class="metric-title">Faol Buyurtmalar</span>
+              <div class="metric-icon-box" style="color:var(--warning);"><i class="fas fa-fire"></i></div>
+            </div>
+            <div class="metric-value" id="statActiveOrders">0</div>
+            <div class="metric-subtext">Jarayondagi (oshxona + yo'lda)</div>
+          </div>
+
+          <div class="metric-card info">
+            <div class="metric-header">
+              <span class="metric-title">Yetkazilgan</span>
+              <div class="metric-icon-box" style="color:var(--info);"><i class="fas fa-check-double"></i></div>
+            </div>
+            <div class="metric-value" id="statDelivered">0</div>
+            <div class="metric-subtext">Mijozga topshirildi</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span class="metric-title">Hamkor Restoranlar</span>
+              <div class="metric-icon-box" style="color:#a855f7;"><i class="fas fa-utensils"></i></div>
+            </div>
+            <div class="metric-value" id="statRestaurants">0 / 0</div>
+            <div class="metric-subtext">Faol / Jami ro'yxatdagilar</div>
+          </div>
+
+          <div class="metric-card success">
+            <div class="metric-header">
+              <span class="metric-title">Onlayn Kuryerlar</span>
+              <div class="metric-icon-box" style="color:var(--success);"><i class="fas fa-motorcycle"></i></div>
+            </div>
+            <div class="metric-value" id="statCouriers">0 / 0</div>
+            <div class="metric-subtext">Hozirda xaritada faollar</div>
+          </div>
+        </div>
+
+        <!-- Recent Orders Card -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-history" style="color:var(--primary);"></i>
+              <span>Eng So'nggi Buyurtmalar</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="switchTab('orders')">
+              Barchasini ko'rish →
+            </button>
+          </div>
+          <div id="recentOrdersTicker">
+            <div style="text-align:center; color:var(--text-muted); padding:20px;">Yuklanmoqda...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 2: ORDERS ================= -->
+      <div class="tab-view" id="view-orders" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-shopping-cart" style="color:var(--primary);"></i>
+              <span>Buyurtmalar Ro'yxati</span>
+            </div>
+            <div class="filters-row">
+              <button class="filter-btn active" data-filter="ALL">Barchasi</button>
+              <button class="filter-btn" data-filter="ACTIVE">Faol Buyurtmalar</button>
+              <button class="filter-btn" data-filter="DELIVERED">Yetkazilganlar</button>
+              <button class="filter-btn" data-filter="CANCELLED">Bekor qilinganlar</button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Buyurtma №</th>
+                  <th>Vaqti</th>
+                  <th>Mijoz</th>
+                  <th>Restoran</th>
+                  <th>Yetkazish Manzili</th>
+                  <th>Summa</th>
+                  <th>Holati</th>
+                  <th>Amallar</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <tr><td colspan="8" style="text-align:center; padding:32px; color:var(--text-muted);">Yuklanmoqda...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 3: RESTAURANTS ================= -->
+      <div class="tab-view" id="view-restaurants" style="display:none;">
+        <div class="card-header" style="margin-bottom:24px;">
+          <div class="card-title">
+            <i class="fas fa-store-alt" style="color:var(--primary);"></i>
+            <span data-i18n="tabRestaurantsTitle">Vodil va Farg'ona Restoranlari</span>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddRestaurantModal()">
+            <i class="fas fa-plus"></i> <span data-i18n="btnNewRestaurant">Yangi Restoran</span>
+          </button>
+        </div>
+        <div class="restaurants-grid" id="restaurantsGrid">
+          <div style="color:var(--text-muted); padding:32px;">Yuklanmoqda...</div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 4: COURIERS & MAP ================= -->
+      <div class="tab-view" id="view-couriers" style="display:none;">
+        <div class="card" style="padding:16px; margin-bottom:24px;">
+          <div class="card-header" style="margin-bottom:12px;">
+            <div class="card-title">
+              <i class="fas fa-map-marked-alt" style="color:var(--success);"></i>
+              <span data-i18n="mapTitle">Jonli Kuryerlar va Buyurtmalar Xaritasi (Vodil & Farg'ona)</span>
+            </div>
+            <div style="font-size:12px; color:var(--text-secondary);" data-i18n="mapLegend">
+              🟢 Yashil: Bo'sh onlayn | 🟡 Sariq: Buyurtmada | ⚫ Kulrang: Oflayn
+            </div>
+          </div>
+          <div id="mapContainer"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-id-badge" style="color:var(--primary);"></i>
+              <span data-i18n="tabCouriersTitle">Kuryerlar Ro'yxati</span>
+            </div>
+            <button class="btn btn-success btn-sm" onclick="openAddCourierModal()">
+              <i class="fas fa-plus"></i> <span data-i18n="btnNewCourier">Yangi Kuryer Qo'shish</span>
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ismi</th>
+                  <th>Telefon</th>
+                  <th>Transport</th>
+                  <th>Reyting</th>
+                  <th>Bugungi yetkazishlar</th>
+                  <th>Holati</th>
+                </tr>
+              </thead>
+              <tbody id="couriersTableBody">
+                <tr><td colspan="7" style="text-align:center; padding:24px; color:var(--text-muted);">Yuklanmoqda...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= TAB 5: CUSTOMERS ================= -->
+      <div class="tab-view" id="view-customers" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <i class="fas fa-user-friends" style="color:var(--primary);"></i>
+              <span>Ro'yxatdan O'tgan Mijozlar</span>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>F.I.SH</th>
+                  <th>Telefon Raqam</th>
+                  <th>SMS Tasdiq</th>
+                  <th>Ro'yxatdan o'tgan sana</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="customersTableBody">
+                <tr><td colspan="5" style="text-align:center; padding:24px; color:var(--text-muted);">Yuklanmoqda...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Order Detail Modal -->
+  <div class="modal-overlay" id="orderDetailModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="color:#fff; font-size:16px;">Buyurtma Detallari va Boshqaruv</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeOrderModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalOrderContent">
+        <!-- Injected via JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" onclick="changeOrderStatus('confirmed')">
+          <i class="fas fa-check"></i> Tasdiqlash
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="changeOrderStatus('preparing')">
+          <i class="fas fa-fire"></i> Tayyorlash
+        </button>
+        <button class="btn btn-secondary btn-sm" onclick="changeOrderStatus('ready_for_pickup')">
+          <i class="fas fa-box"></i> Kuryerga tayyor
+        </button>
+        <button class="btn btn-success btn-sm" onclick="changeOrderStatus('delivered')">
+          <i class="fas fa-check-double"></i> Yetkazildi ✅
+        </button>
+        <button class="btn btn-sm" style="background:#ef4444; color:#fff;" onclick="changeOrderStatus('cancelled')">
+          <i class="fas fa-times"></i> Bekor qilish
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Restaurant Modal -->
+  <div class="modal-overlay" id="addRestaurantModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="color:#fff; font-size:16px;" data-i18n="modalNewRestaurantTitle">Yangi Hamkor Restoran Qo'shish</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeAddRestaurantModal()">✕</button>
+      </div>
+      <form onsubmit="submitNewRestaurant(event)">
+        <div class="modal-body" style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelRestName">Restoran Nomi *</label>
+            <input type="text" id="newRestName" class="password-input" placeholder="Masalan: Shohona Osh Markazi" required>
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelRestAddress">Manzili *</label>
+            <input type="text" id="newRestAddress" class="password-input" placeholder="Masalan: Vodil markazi, Mustaqillik shoh ko'chasi" required>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelRestPhone">Telefon Raqami *</label>
+              <input type="text" id="newRestPhone" class="password-input" placeholder="+998 90 123 45 67" required>
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelRestDeliveryTime">Yetkazish Vaqti (daqiqa)</label>
+              <input type="number" id="newRestDeliveryTime" class="password-input" placeholder="30" value="30">
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelRestOpen">Ochilish Vaqti</label>
+              <input type="text" id="newRestOpen" class="password-input" value="09:00">
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelRestClose">Yopilish Vaqti</label>
+              <input type="text" id="newRestClose" class="password-input" value="23:00">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelRestImage">Muqova Rasmi (URL)</label>
+            <input type="url" id="newRestImage" class="password-input" placeholder="https://images.unsplash.com/...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeAddRestaurantModal()" data-i18n="btnCancel">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary btn-sm" data-i18n="btnSaveRest">Restoranni Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Courier Modal -->
+  <div class="modal-overlay" id="addCourierModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 style="color:#fff; font-size:16px;" data-i18n="modalNewCourierTitle">Yangi Kuryer Qo'shish</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeAddCourierModal()">✕</button>
+      </div>
+      <form onsubmit="submitNewCourier(event)">
+        <div class="modal-body" style="display:flex; flex-direction:column; gap:14px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelCourierName">Ismi *</label>
+              <input type="text" id="newCourierFirstName" class="password-input" placeholder="Alisher" required>
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelCourierLastName">Familiyasi</label>
+              <input type="text" id="newCourierLastName" class="password-input" placeholder="Aliyev">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelCourierPhone">Telefon Raqami *</label>
+            <input type="text" id="newCourierPhone" class="password-input" placeholder="+998 90 987 65 43" required>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelCourierVehicle">Transport Turi</label>
+              <select id="newCourierVehicle" class="password-input" style="background:#1f2937;">
+                <option value="motorcycle">Motosikl / Skuter</option>
+                <option value="car">Yengil Avtomobil</option>
+                <option value="bicycle">Velosiped</option>
+                <option value="on_foot">Piyoda</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; color:var(--text-secondary); display:block; margin-bottom:4px;" data-i18n="labelCourierPlate">Davlat Raqami</label>
+              <input type="text" id="newCourierPlate" class="password-input" placeholder="40 A 123 AA">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeAddCourierModal()" data-i18n="btnCancel">Bekor qilish</button>
+          <button type="submit" class="btn btn-success btn-sm" data-i18n="btnSaveCourier">Kuryerni Ro'yxatdan O'tkazish</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

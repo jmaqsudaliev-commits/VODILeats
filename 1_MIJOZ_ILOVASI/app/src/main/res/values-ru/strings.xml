@@ -1,0 +1,63 @@
+<resources>
+    <string name="app_name">Водил Итс</string>
+    <string name="customer_title">Водил Итс Клиент</string>
+
+    <!-- Auth -->
+    <string name="auth_title">Добро пожаловать в Vodil Eats!</string>
+    <string name="auth_subtitle">Доставим вашу любимую еду быстро и горячей</string>
+    <string name="tab_login">Вход (по паролю)</string>
+    <string name="tab_register">Регистрация (по SMS)</string>
+    <string name="phone_label">Номер телефона</string>
+    <string name="phone_placeholder">+998 90 123 45 67</string>
+    <string name="password_label">Пароль</string>
+    <string name="password_placeholder">Введите ваш пароль</string>
+    <string name="full_name_label">Ваше Имя и Фамилия</string>
+    <string name="full_name_placeholder">Например: Алишер Навои</string>
+    <string name="otp_label">Код подтверждения из SMS</string>
+    <string name="otp_placeholder">6-значный код</string>
+    <string name="btn_login">Войти в аккаунт</string>
+    <string name="btn_send_otp">Получить SMS код</string>
+    <string name="btn_verify_register">Завершить регистрацию</string>
+    <string name="forgot_password">Забыли пароль?</string>
+
+    <!-- Catalog -->
+    <string name="catalog_title">Каталог блюд</string>
+    <string name="search_placeholder">Поиск ресторана или блюда...</string>
+    <string name="all_categories">Все</string>
+    <string name="popular_restaurants">Популярные рестораны</string>
+    <string name="delivery_time">%d мин</string>
+    <string name="delivery_fee">Доставка: %s сум</string>
+    <string name="open_status">Открыто</string>
+    <string name="closed_status">Закрыто</string>
+
+    <!-- Menu & Cart -->
+    <string name="menu_title">Меню</string>
+    <string name="add_to_cart">В корзину</string>
+    <string name="cart_title">Корзина</string>
+    <string name="cart_empty">Ваша корзина пуста</string>
+    <string name="cart_empty_subtext">Выберите вкусные блюда из каталога</string>
+    <string name="order_summary">Детали заказа</string>
+    <string name="subtotal">Сумма блюд:</string>
+    <string name="delivery_cost">Стоимость доставки:</string>
+    <string name="total_amount">Итого к оплате:</string>
+    <string name="delivery_address_label">Адрес доставки</string>
+    <string name="delivery_address_placeholder">Водил, ул. Мустакиллик, д. 14</string>
+    <string name="customer_note_label">Комментарий курьеру (необязательно)</string>
+    <string name="btn_checkout">Оформить заказ</string>
+
+    <!-- Tracking -->
+    <string name="tracking_title">Отслеживание заказа</string>
+    <string name="order_status">Статус заказа</string>
+    <string name="status_pending">Принят</string>
+    <string name="status_confirmed">Подтвержден</string>
+    <string name="status_preparing">Готовится</string>
+    <string name="status_delivering">Курьер в пути</string>
+    <string name="status_delivered">Доставлен</string>
+    <string name="status_cancelled">Отменен</string>
+    <string name="call_courier">Позвонить курьеру</string>
+    <string name="call_restaurant">Позвонить в ресторан</string>
+
+    <!-- Language -->
+    <string name="language_uzbek">O\'zbekcha</string>
+    <string name="language_russian">Русский</string>
+</resources>
