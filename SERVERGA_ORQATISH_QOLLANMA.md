@@ -29,9 +29,9 @@ cd /var/www/vodil-eats
 
 Fayllarni serverga yuklashning 2 ta oson yo'li bor:
 - **Variant A (WinSCP / FileZilla orqali)**: Kompyuteringizdan `backend` va `ADMIN_PANEL` papkalarini hamda `SERVERGA_O_RNATISH_UBUNTU.sh` faylini serverdagi `/var/www/vodil-eats` papkasiga tashlang.
-- **Variant B (Git orqali)**: Agar loyihangiz GitHub/GitLab'da bo'lsa:
+- **Variant B (GitHub orqali - Tavsiya etiladi)**:
   ```bash
-  git clone <sizning_repo_manzilingiz> .
+  git clone https://github.com/jmaqsudaliev-commits/VODILeats.git .
   ```
 
 ---
