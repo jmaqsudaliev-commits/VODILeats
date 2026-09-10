@@ -3,6 +3,7 @@ import {
   Get,
   Put,
   Post,
+  Delete,
   Param,
   Query,
   Body,
@@ -67,6 +68,12 @@ export class AdminController {
     return this.adminService.toggleRestaurantStatus(id, field);
   }
 
+  @Delete('restaurants/:id')
+  @ApiOperation({ summary: 'Restoranni o\'chirish' })
+  async deleteRestaurant(@Param('id') id: string) {
+    return this.adminService.deleteRestaurant(id);
+  }
+
   @Get('couriers')
   @ApiOperation({ summary: 'Barcha kuryerlar ro\'yxati va geolokatsiyasi' })
   async getAllCouriers() {
@@ -77,6 +84,21 @@ export class AdminController {
   @ApiOperation({ summary: 'Yangi kuryer qo\'shish' })
   async createCourier(@Body() body: any) {
     return this.adminService.createCourier(body);
+  }
+
+  @Put('couriers/:id/verify')
+  @ApiOperation({ summary: 'Kuryerni admin tomonidan tasdiqlash yoki bekor qilish' })
+  async verifyCourier(
+    @Param('id') id: string,
+    @Body('isVerified') isVerified?: boolean,
+  ) {
+    return this.adminService.verifyCourier(id, isVerified !== false);
+  }
+
+  @Post('restaurants/:id/regenerate-code')
+  @ApiOperation({ summary: 'Restoran maxsus kodini qayta generatsiya qilish' })
+  async regenerateRestaurantCode(@Param('id') id: string) {
+    return this.adminService.regenerateRestaurantCode(id);
   }
 
   @Put('couriers/:id/status')

@@ -5,6 +5,7 @@ import {
   Put,
   Param,
   Body,
+  Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -16,31 +17,50 @@ import { RolesGuard, Roles } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/entities/user.entity';
 
 @ApiTags('courier')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('courier')
 export class CourierController {
   constructor(private readonly courierService: CourierService) {}
 
+  @Post('register')
+  @ApiOperation({ summary: 'Kuryer ro\'yxatdan o\'tishi (Admin tasdig\'i talab etiladi)' })
+  async register(@Body() body: any) {
+    return this.courierService.register(body);
+  }
+
+  @Post('login')
+  @ApiOperation({ summary: 'Kuryer login (Telefon + Parol)' })
+  async login(@Body() body: any) {
+    return this.courierService.login(body);
+  }
+
+  @Get('status-check')
+  @ApiOperation({ summary: 'Kuryer tasdiqlanganlik holatini tekshirish' })
+  async checkStatus(@Query('phone') phone: string) {
+    return this.courierService.checkStatus(phone);
+  }
+
   @Post('profile')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COURIER)
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Kuryer profilini yaratish' })
   async createProfile(@Request() req: any, @Body() data: any) {
     return this.courierService.createProfile(req.user.id, data);
   }
 
   @Get('profile')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COURIER)
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Kuryer profilini olish' })
   async getProfile(@Request() req: any) {
     return this.courierService.getProfile(req.user.id);
   }
 
   @Put('status')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COURIER)
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Statusni o\'zgartirish (online/offline)' })
   async updateStatus(
     @Request() req: any,
@@ -50,8 +70,9 @@ export class CourierController {
   }
 
   @Put('location')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COURIER)
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'GPS lokatsiyani yangilash' })
   async updateLocation(
     @Request() req: any,
@@ -66,8 +87,9 @@ export class CourierController {
   }
 
   @Put('orders/:orderId/accept')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COURIER)
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Buyurtmani qabul qilish' })
   async acceptOrder(
     @Request() req: any,
@@ -77,8 +99,9 @@ export class CourierController {
   }
 
   @Put('orders/:orderId/reject')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COURIER)
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Buyurtmani rad etish' })
   async rejectOrder(
     @Request() req: any,
@@ -89,8 +112,9 @@ export class CourierController {
   }
 
   @Put('delivery/complete')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COURIER)
-  @UseGuards(RolesGuard)
   @ApiOperation({ summary: 'Yetkazishni yakunlash' })
   async completeDelivery(@Request() req: any) {
     return this.courierService.completeDelivery(req.user.id);

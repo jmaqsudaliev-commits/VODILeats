@@ -1,7 +1,16 @@
 package com.vodileats.customer.data
 
 import android.content.Context
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Delete
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -90,16 +99,16 @@ interface CartDao {
     suspend fun insertOrUpdate(item: CartItem)
 
     @Query("UPDATE cart_items SET quantity = :quantity WHERE menuItemId = :id")
-    suspend fun updateQuantity(id: String, quantity: Int)
+    suspend fun updateQuantity(id: String, quantity: Int): Int
 
     @Delete
-    suspend fun delete(item: CartItem)
+    suspend fun delete(item: CartItem): Int
 
     @Query("DELETE FROM cart_items WHERE menuItemId = :id")
-    suspend fun deleteById(id: String)
+    suspend fun deleteById(id: String): Int
 
     @Query("DELETE FROM cart_items")
-    suspend fun clear()
+    suspend fun clear(): Int
 
     @Query("SELECT COUNT(*) FROM cart_items")
     fun getCount(): Flow<Int>
@@ -114,8 +123,8 @@ abstract class CustomerDatabase : RoomDatabase() {
 interface CustomerApi {
     @GET("restaurants")
     suspend fun getRestaurants(
-        @Query("search") search: String? = null,
-        @Query("page") page: Int = 1
+        @retrofit2.http.Query("search") search: String? = null,
+        @retrofit2.http.Query("page") page: Int = 1
     ): Response<RestaurantListResponse>
 
     @GET("restaurants/{id}")
@@ -140,23 +149,105 @@ interface CustomerApi {
     suspend fun getOrder(@Path("id") id: String): Response<Order>
 }
 
+// Preferences Manager for Customer
+object CustomerPrefs {
+    private const val PREF_NAME = "vodil_customer_prefs"
+
+    fun saveUser(context: Context, token: String, phone: String, name: String) {
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString("token", token)
+            .putString("phone", phone)
+            .putString("name", name)
+            .putBoolean("is_logged_in", true)
+            .apply()
+    }
+
+    fun isLoggedIn(context: Context): Boolean {
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).getBoolean("is_logged_in", false)
+    }
+
+    fun getUserPhone(context: Context): String {
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).getString("phone", "") ?: ""
+    }
+
+    fun getUserName(context: Context): String {
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).getString("name", "Mijoz") ?: "Mijoz"
+    }
+
+    fun logout(context: Context) {
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit().clear().apply()
+    }
+
+    fun setServerHost(context: Context, host: String) {
+        context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).edit().putString("server_host", host.trim()).apply()
+    }
+
+    fun getServerHost(context: Context): String {
+        return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE).getString("server_host", "192.168.1.20:3000") ?: "192.168.1.20:3000"
+    }
+}
+
+// Interceptor to dynamically route calls to whatever IP/Domain the user sets (Production Server, Real WiFi phone, or Emulator)
+class DynamicHostInterceptor(private val context: Context) : okhttp3.Interceptor {
+    override fun intercept(chain: okhttp3.Interceptor.Chain): okhttp3.Response {
+        var request = chain.request()
+        val rawInput = CustomerPrefs.getServerHost(context).trim()
+
+        if (rawInput.isNotBlank()) {
+            try {
+                val isHttps = rawInput.startsWith("https://", ignoreCase = true)
+                val clean = rawInput
+                    .removePrefix("http://")
+                    .removePrefix("https://")
+                    .trimEnd('/')
+
+                val host: String
+                val port: Int
+
+                if (clean.contains(":")) {
+                    val parts = clean.split(":")
+                    host = parts[0]
+                    port = parts[1].toIntOrNull() ?: if (isHttps) 443 else 80
+                } else {
+                    host = clean
+                    port = if (host == "10.0.2.2" || host.startsWith("192.168.") || host == "localhost") 3000
+                           else if (isHttps) 443 else 80
+                }
+
+                if (host.isNotBlank()) {
+                    val newUrl = request.url.newBuilder()
+                        .scheme(if (isHttps || port == 443) "https" else "http")
+                        .host(host)
+                        .port(port)
+                        .build()
+                    request = request.newBuilder().url(newUrl).build()
+                }
+            } catch (e: Exception) {}
+        }
+
+        return chain.proceed(request)
+    }
+}
+
 // Hilt Dependency Injection
 @Module
 @InstallIn(SingletonComponent::class)
 object DataModule {
 
-    // 192.168.1.4: Userning kompyuter IP manzili (Real telefon va Wi-Fi uchun)
-    // 10.0.2.2: Standart Android Studio emulyatori uchun
-    private const val BASE_URL = "http://192.168.1.4:3000/api/v1/"
+    private const val BASE_URL = "http://192.168.1.20:3000/api/v1/"
 
     @Provides
     @Singleton
-    fun provideOkHttp(): OkHttpClient {
+    fun provideOkHttp(@ApplicationContext context: Context): OkHttpClient {
         val logging = HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }
         return OkHttpClient.Builder()
+            .addInterceptor(DynamicHostInterceptor(context))
             .addInterceptor(logging)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(8, TimeUnit.SECONDS)
+            .readTimeout(8, TimeUnit.SECONDS)
+            .writeTimeout(8, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
             .build()
     }
 

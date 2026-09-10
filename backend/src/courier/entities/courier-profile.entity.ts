@@ -78,7 +78,7 @@ export class CourierProfile {
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   todayEarnings: number;
 
-  @Column({ default: true })
+  @Column({ default: false })
   isVerified: boolean;
 
   @Column({ default: true })

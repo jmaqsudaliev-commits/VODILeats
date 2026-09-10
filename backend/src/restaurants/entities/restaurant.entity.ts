@@ -21,6 +21,10 @@ export class Restaurant {
   @Index('IDX_RESTAURANT_NAME')
   name: string;
 
+  @Column({ length: 50, unique: true, nullable: true })
+  @Index('IDX_RESTAURANT_ACCESS_CODE')
+  accessCode: string;
+
   @Column({ type: 'text' })
   description: string;
 

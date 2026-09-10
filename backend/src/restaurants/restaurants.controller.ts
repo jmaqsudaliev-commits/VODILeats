@@ -20,6 +20,18 @@ import { UserRole } from '../users/entities/user.entity';
 export class RestaurantsController {
   constructor(private readonly restaurantsService: RestaurantsService) {}
 
+  @Post('login-by-code')
+  @ApiOperation({ summary: 'Restoran maxsus kodi orqali kirish' })
+  async loginByCode(@Body('accessCode') accessCode: string) {
+    return this.restaurantsService.loginByCode(accessCode);
+  }
+
+  @Put(':id/toggle-open')
+  @ApiOperation({ summary: 'Restoran ochiq/yopiq holatini o\'zgartirish' })
+  async toggleOpen(@Param('id') id: string) {
+    return this.restaurantsService.toggleOpen(id);
+  }
+
   @Get()
   @ApiOperation({ summary: 'Barcha restoranlarni olish (filtrlash bilan)' })
   @ApiQuery({ name: 'search', required: false })

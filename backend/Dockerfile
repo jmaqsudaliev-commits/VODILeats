@@ -16,6 +16,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/ADMIN_PANEL ./ADMIN_PANEL
 
 EXPOSE 3000
 

@@ -34,6 +34,13 @@ export class AuthController {
     return this.authService.verifyOtp(dto);
   }
 
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Telefon raqam va parol orqali kirish' })
+  async login(@Body() dto: LoginPasswordDto) {
+    return this.authService.loginWithPassword(dto);
+  }
+
   @Post('login-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Telefon raqam va parol orqali kirish (boshqa telefondan yoki qayta kirish)' })

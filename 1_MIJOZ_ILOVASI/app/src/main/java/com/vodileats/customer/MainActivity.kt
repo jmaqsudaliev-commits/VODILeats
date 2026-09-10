@@ -22,11 +22,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val startDest = if (com.vodileats.customer.data.CustomerPrefs.isLoggedIn(this)) "catalog" else "auth"
+
         setContent {
             CustomerTheme {
                 val navController = rememberNavController()
 
-                NavHost(navController = navController, startDestination = "auth") {
+                NavHost(navController = navController, startDestination = startDest) {
                     // 1. Auth Screen: Login via Phone + Password OR Register via Phone + SMS OTP + Name + Password
                     composable("auth") {
                         CustomerAuthScreen(

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Like, Between } from 'typeorm';
 import { Restaurant } from './entities/restaurant.entity';
@@ -171,5 +176,54 @@ export class RestaurantsService {
 
   private toRad(deg: number): number {
     return deg * (Math.PI / 180);
+  }
+
+  /**
+   * Restoran maxsus kodi orqali kirish (Admin paneldan berilgan kod)
+   */
+  async loginByCode(accessCode: string) {
+    if (!accessCode || !accessCode.trim()) {
+      throw new BadRequestException('Maxsus kod kiritilishi shart');
+    }
+
+    const code = accessCode.trim().toUpperCase();
+    const restaurant = await this.restaurantRepository.findOne({
+      where: { accessCode: code },
+      relations: ['categories', 'categories.items', 'owner'],
+    });
+
+    if (!restaurant) {
+      throw new NotFoundException('Kiritilgan maxsus kod bo\'yicha restoran topilmadi');
+    }
+
+    if (!restaurant.isActive) {
+      throw new UnauthorizedException('Ushbu restoran admin tomonidan faolsizlantirilgan');
+    }
+
+    return {
+      success: true,
+      message: 'Restoran tizimga muvaffaqiyatli kirdi va faollashdi',
+      restaurant: {
+        id: restaurant.id,
+        name: restaurant.name,
+        description: restaurant.description,
+        address: restaurant.address,
+        phone: restaurant.phone,
+        accessCode: restaurant.accessCode,
+        isOpen: restaurant.isActive,
+        rating: restaurant.rating,
+        totalReviews: restaurant.totalReviews,
+      },
+    };
+  }
+
+  /**
+   * Restoran ochiq/yopiq holatini o'zgartirish
+   */
+  async toggleOpen(id: string) {
+    const restaurant = await this.findById(id);
+    restaurant.isActive = !restaurant.isActive;
+    await this.restaurantRepository.save(restaurant);
+    return { success: true, isOpen: restaurant.isActive };
   }
 }

@@ -147,6 +147,28 @@ export class AdminService {
   }
 
   /**
+   * Restoranni butunlay o'chirish (va uning menyularini tozalash)
+   */
+  async deleteRestaurant(id: string) {
+    const restaurant = await this.restaurantRepo.findOne({
+      where: { id },
+      relations: ['categories', 'categories.items'],
+    });
+    if (!restaurant) throw new NotFoundException('Restoran topilmadi');
+
+    if (restaurant.categories && restaurant.categories.length > 0) {
+      for (const cat of restaurant.categories) {
+        if (cat.items && cat.items.length > 0) {
+          await this.menuItemRepo.remove(cat.items);
+        }
+      }
+    }
+
+    await this.restaurantRepo.remove(restaurant);
+    return { success: true, message: 'Restoran muvaffaqiyatli o\'chirildi' };
+  }
+
+  /**
    * Yangi real restoran yaratish (Super Admin)
    */
   async createRestaurant(data: {
@@ -168,11 +190,20 @@ export class AdminService {
       owner = await this.userRepo.findOne({ where: {} });
     }
 
+    // Avtomatik yoki kiritilgan maxsus kirish kodi
+    let accessCode = (data as any).accessCode?.trim().toUpperCase();
+    if (!accessCode) {
+      const prefix = data.name.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase() || 'REST';
+      const randomNum = Math.floor(100 + Math.random() * 900);
+      accessCode = `VDL-${prefix}-${randomNum}`;
+    }
+
     const restaurant = this.restaurantRepo.create({
       name: data.name,
       description: data.description || 'Milliy va mazali taomlar',
       address: data.address,
       phone: data.phone,
+      accessCode,
       latitude: Number(data.latitude) || 40.1800,
       longitude: Number(data.longitude) || 71.7200,
       openTime: data.openTime || '09:00',
@@ -186,6 +217,46 @@ export class AdminService {
     });
 
     return this.restaurantRepo.save(restaurant);
+  }
+
+  /**
+   * Kuryerni admin tomonidan tasdiqlash yoki rad etish
+   */
+  async verifyCourier(id: string, isVerified: boolean = true) {
+    const courier = await this.courierProfileRepo.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+    if (!courier) throw new NotFoundException('Kuryer topilmadi');
+
+    courier.isVerified = isVerified;
+    if (isVerified) {
+      courier.isActive = true;
+    }
+    const saved = await this.courierProfileRepo.save(courier);
+    return {
+      success: true,
+      message: isVerified ? 'Kuryer muvaffaqiyatli tasdiqlandi' : 'Kuryer tasdig\'i bekor qilindi',
+      courier: saved,
+    };
+  }
+
+  /**
+   * Restoran maxsus kodini yangilash
+   */
+  async regenerateRestaurantCode(restaurantId: string) {
+    const restaurant = await this.restaurantRepo.findOne({ where: { id: restaurantId } });
+    if (!restaurant) throw new NotFoundException('Restoran topilmadi');
+
+    const prefix = restaurant.name.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase() || 'REST';
+    const randomNum = Math.floor(100 + Math.random() * 900);
+    restaurant.accessCode = `VDL-${prefix}-${randomNum}`;
+    await this.restaurantRepo.save(restaurant);
+    return {
+      success: true,
+      accessCode: restaurant.accessCode,
+      message: 'Yangi maxsus kod yaratildi',
+    };
   }
 
   /**

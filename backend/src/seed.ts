@@ -1,21 +1,26 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DataSource } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { User, UserRole } from './users/entities/user.entity';
 import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { Category } from './menu/entities/category.entity';
 import { MenuItem } from './menu/entities/menu-item.entity';
+import { CourierProfile, CourierStatus, VehicleType } from './courier/entities/courier-profile.entity';
 
 async function seed() {
   const app = await NestFactory.createApplicationContext(AppModule);
   const dataSource = app.get(DataSource);
 
-  console.log('🌱 Seeding VODIL EATS database...');
+  console.log('🌱 Seeding VODIL EATS database with real working accounts & access codes...');
 
   const userRepo = dataSource.getRepository(User);
   const restaurantRepo = dataSource.getRepository(Restaurant);
   const categoryRepo = dataSource.getRepository(Category);
   const menuItemRepo = dataSource.getRepository(MenuItem);
+  const courierProfileRepo = dataSource.getRepository(CourierProfile);
+
+  const defaultPasswordHash = await bcrypt.hash('123456', 10);
 
   // 1. Create Users
   let owner = await userRepo.findOne({ where: { phone: '+998901112233' } });
@@ -24,43 +29,113 @@ async function seed() {
       phone: '+998901112233',
       firstName: 'Alisher',
       lastName: 'Usmonov',
+      passwordHash: defaultPasswordHash,
       role: UserRole.RESTAURANT_OWNER,
       isPhoneVerified: true,
       isActive: true,
     });
     owner = await userRepo.save(owner);
+  } else {
+    owner.passwordHash = defaultPasswordHash;
+    await userRepo.save(owner);
   }
 
+  // 2. Verified Courier (Bobur)
   let courier = await userRepo.findOne({ where: { phone: '+998902223344' } });
   if (!courier) {
     courier = userRepo.create({
       phone: '+998902223344',
       firstName: 'Bobur',
       lastName: 'Ergashev',
+      passwordHash: defaultPasswordHash,
       role: UserRole.COURIER,
       isPhoneVerified: true,
       isActive: true,
     });
     courier = await userRepo.save(courier);
+  } else {
+    courier.passwordHash = defaultPasswordHash;
+    await userRepo.save(courier);
   }
 
+  let courierProf = await courierProfileRepo.findOne({ where: { userId: courier.id } });
+  if (!courierProf) {
+    courierProf = courierProfileRepo.create({
+      userId: courier.id,
+      status: CourierStatus.ONLINE,
+      vehicleType: VehicleType.MOTORCYCLE,
+      vehiclePlateNumber: '40A777AA',
+      currentLatitude: 40.1772,
+      currentLongitude: 71.7228,
+      isVerified: true, // Tasdiqlangan kuryer
+      isActive: true,
+      rating: 4.9,
+      todayDeliveries: 4,
+    });
+    await courierProfileRepo.save(courierProf);
+  } else {
+    courierProf.isVerified = true;
+    await courierProfileRepo.save(courierProf);
+  }
+
+  // 3. Pending Courier (Javohir - Admin tasdig'i kutilmoqda)
+  let pendingCourier = await userRepo.findOne({ where: { phone: '+998907778899' } });
+  if (!pendingCourier) {
+    pendingCourier = userRepo.create({
+      phone: '+998907778899',
+      firstName: 'Javohir',
+      lastName: 'Toirov',
+      passwordHash: defaultPasswordHash,
+      role: UserRole.COURIER,
+      isPhoneVerified: true,
+      isActive: true,
+    });
+    pendingCourier = await userRepo.save(pendingCourier);
+  } else {
+    pendingCourier.passwordHash = defaultPasswordHash;
+    await userRepo.save(pendingCourier);
+  }
+
+  let pendingProf = await courierProfileRepo.findOne({ where: { userId: pendingCourier.id } });
+  if (!pendingProf) {
+    pendingProf = courierProfileRepo.create({
+      userId: pendingCourier.id,
+      status: CourierStatus.OFFLINE,
+      vehicleType: VehicleType.CAR,
+      vehiclePlateNumber: '40B888BB',
+      currentLatitude: 40.1810,
+      currentLongitude: 71.7240,
+      isVerified: false, // Admin tasdiqlashi shart bo'lgan kuryer!
+      isActive: true,
+      rating: 5.0,
+      todayDeliveries: 0,
+    });
+    await courierProfileRepo.save(pendingProf);
+  }
+
+  // 4. Customer (Azizbek)
   let customer = await userRepo.findOne({ where: { phone: '+998903334455' } });
   if (!customer) {
     customer = userRepo.create({
       phone: '+998903334455',
       firstName: 'Azizbek',
       lastName: 'Rahimov',
+      passwordHash: defaultPasswordHash,
       role: UserRole.CUSTOMER,
       isPhoneVerified: true,
       isActive: true,
     });
     customer = await userRepo.save(customer);
+  } else {
+    customer.passwordHash = defaultPasswordHash;
+    await userRepo.save(customer);
   }
 
-  // 2. Create Restaurants
+  // 5. Create Restaurants with Access Codes
   const restaurantsData = [
     {
       name: 'Shohona Milliy Taomlar',
+      accessCode: 'VDL-SHOH-101',
       description: 'Eng sara Fargona va Vodil milliy taomlari: Osh, Manti, Shashlik',
       address: 'Vodil markazi, Mustaqillik shoh koʻchasi 14',
       latitude: 40.1795,
@@ -95,6 +170,7 @@ async function seed() {
     },
     {
       name: 'Vodil Fast Food & Burger',
+      accessCode: 'VDL-FAST-202',
       description: 'Mazali lavashlar, burgerlar va crispy tovuq qanotlari',
       address: 'Vodil shoh koʻchasi 2',
       latitude: 40.1750,
@@ -127,6 +203,7 @@ async function seed() {
     if (!existing) {
       const rest = restaurantRepo.create({
         name: rData.name,
+        accessCode: rData.accessCode,
         description: rData.description,
         address: rData.address,
         latitude: rData.latitude,
@@ -167,10 +244,20 @@ async function seed() {
           await menuItemRepo.save(item);
         }
       }
+    } else {
+      // Ensure access code is saved
+      if (!existing.accessCode) {
+        existing.accessCode = rData.accessCode;
+        await restaurantRepo.save(existing);
+      }
     }
   }
 
   console.log('✅ Database seeded successfully!');
+  console.log('🔑 Passwords set to "123456" for all test users.');
+  console.log('🔑 Restaurant codes: Shohona Osh: VDL-SHOH-101 | Vodil Burger: VDL-FAST-202');
+  console.log('🚴 Verified Courier: +998902223344 (Bobur, verified)');
+  console.log('⏳ Pending Courier:  +998907778899 (Javohir, unverified/waiting admin approval)');
   await app.close();
 }
 

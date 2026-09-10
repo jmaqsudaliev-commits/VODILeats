@@ -81,8 +81,8 @@ class CourierLocationService : Service(), LocationListener {
 
     private fun sendLocationToServer(lat: Double, lng: Double) {
         try {
-            // 192.168.1.4: Kompyuterning Wi-Fi IP manzili (Real telefon uchun)
-            val url = URL("http://192.168.1.4:3000/api/v1/courier/location")
+            val host = com.vodileats.courier.data.CourierPrefs.getServerHost(this)
+            val url = URL("http://$host/api/v1/courier/location")
             val conn = url.openConnection() as HttpURLConnection
             conn.requestMethod = "PUT"
             conn.setRequestProperty("Content-Type", "application/json")

@@ -42,7 +42,7 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core-ktx)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
@@ -68,7 +68,7 @@ dependencies {
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
 
-    implementation(libs.maps.compose)
+    implementation("com.google.maps.android:maps-compose:6.1.0")
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
 
